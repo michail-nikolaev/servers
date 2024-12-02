@@ -6,6 +6,8 @@ Each MCP server is implemented with either the [Typescript MCP SDK](https://gith
 
 ## 🌟 Featured Servers
 
+These servers aim to showcase MCP featuers and the Typescript and Python SDK. They are by no means the full-featured.
+
 - **[Filesystem](src/filesystem)** - Secure file operations with configurable access controls
 - **[GitHub](src/github)** - Repository management, file operations, and GitHub API integration
 - **[GitLab](src/gitlab)** - GitLab API, enabling project management
