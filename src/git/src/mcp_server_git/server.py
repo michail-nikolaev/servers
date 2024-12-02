@@ -39,10 +39,16 @@ class GitLog(BaseModel):
     repo_path: str
     max_count: int = 10
 
+class GitDiffBetweenCommits(BaseModel):
+    repo_path: str
+    hexsha1: str
+    hexsha2: str
+
 class GitTools(str, Enum):
     STATUS = "git_status"
     DIFF_UNSTAGED = "git_diff_unstaged"
     DIFF_STAGED = "git_diff_staged"
+    DIFF_DIFF_BETWEEN_COMMITS = "git_diff_between_commits"
     COMMIT = "git_commit"
     ADD = "git_add"
     RESET = "git_reset"
@@ -56,6 +62,9 @@ def git_diff_unstaged(repo: git.Repo) -> str:
 
 def git_diff_staged(repo: git.Repo) -> str:
     return repo.git.diff("--cached")
+
+def git_diff_between_commits(repo: git.Repo, hexsha1: str, hexsha2: str) -> str:
+    return repo.git.diff(hexsha1, hexsha2)
 
 def git_commit(repo: git.Repo, message: str) -> str:
     commit = repo.index.commit(message)
@@ -106,6 +115,11 @@ async def serve(repository: Path | None) -> None:
                 name=GitTools.DIFF_UNSTAGED,
                 description="Shows changes in the working directory that are not yet staged",
                 inputSchema=GitDiffUnstaged.schema(),
+            ),
+            Tool(
+                name=GitTools.DIFF_DIFF_BETWEEN_COMMITS,
+                description="Shows differences between commits by providing theirs sha",
+                inputSchema=GitDiffBetweenCommits.schema(),
             ),
             Tool(
                 name=GitTools.DIFF_STAGED,
@@ -181,6 +195,13 @@ async def serve(repository: Path | None) -> None:
                 return [TextContent(
                     type="text",
                     text=f"Unstaged changes:\n{diff}"
+                )]
+
+            case GitTools.DIFF_DIFF_BETWEEN_COMMITS:
+                diff = git_diff_between_commits(repo, arguments["hexsha1"], arguments["hexsha2"])
+                return [TextContent(
+                    type="text",
+                    text=f"Diff:\n{diff}"
                 )]
 
             case GitTools.DIFF_STAGED:
